@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+<title>ادرس معي — دفاتر ذكية تقرأ مصادرك</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<script>
+(function(){ try{
+  var cfg = JSON.parse(localStorage.getItem('adrisma3i_cfg_v1')||'{}');
+  var theme = cfg.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light');
+  document.documentElement.setAttribute('data-theme', theme);
+}catch(e){} })();
+</script>
+</head>
+<body>
+<header id="topbar"></header>
+<nav id="tabnav" class="hidden"></nav>
+<div id="page-root" class="no-tabnav">
+  <div class="page-scroll">
+    <div class="home-inner">
+      <div class="home-hero">
+        <h1>دفاتري</h1>
+        <p id="home-tagline"></p>
+        <div id="setup-banner" class="setup-banner hidden"></div>
+      </div>
+      <div class="nb-grid" id="nb-grid"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-wrap"></div>
+<div id="modals-mount"></div>
+
+<script src="js/config.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/gemini.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/shared.js"></script>
+<script src="js/home.js"></script>
+</body>
+</html>

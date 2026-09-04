@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+<title>الشات — ادرس معي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<script>
+(function(){ try{
+  var cfg = JSON.parse(localStorage.getItem('adrisma3i_cfg_v1')||'{}');
+  var theme = cfg.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light');
+  document.documentElement.setAttribute('data-theme', theme);
+}catch(e){} })();
+</script>
+</head>
+<body>
+<header id="topbar"></header>
+<nav id="tabnav"></nav>
+<div id="page-root">
+  <div class="page-chat">
+    <div id="chat-scroll"></div>
+    <div class="chat-input-wrap">
+      <div class="selcount" id="sel-count"></div>
+      <div class="chat-input-box">
+        <textarea id="chat-input" rows="1" placeholder="اسأل عن مصادرك..."></textarea>
+        <button class="send-btn" id="send-btn"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-wrap"></div>
+<div id="modals-mount"></div>
+
+<script src="js/config.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/gemini.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/shared.js"></script>
+<script src="js/chat.js"></script>
+</body>
+</html>
