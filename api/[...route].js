@@ -88,4 +88,3 @@ module.exports = async function handler(req, res) {
     return json(res, { error: String(err && err.message || err) }, 500);
   }
 };
-
