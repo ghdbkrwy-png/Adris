@@ -1,35 +1,30 @@
 // كل التعامل مع الذكاء الاصطناعي — بس هالمرة بدون ما يشوف المتصفح مفتاح API إطلاقًا.
 // كل طلب يروح لخادم API الآمن على Vercel يلي يحمل المفتاح باسم متغيرات بيئة،
-// ما عدا رفع البايتات الفعلي للملف: هذا يروح مباشرة لرابط الجلسة يلي يرجعه Google —
-// رابط مؤقت خاص بهالرفعة بس، ما فيه المفتاح، فما في داعي يمر عبر الوسيط.
+// رفع الملف نفسه يمر عبر Vercel حتى ما يعتمد المتصفح على CORS الخاص بـGoogle.
 window.Gemini = (function(){
 
-  /* ---------- 1) رفع الملف ---------- */
+  /* ---------- 1) رفع الملف عبر Vercel بدون كشف المفتاح ---------- */
 
-  async function startUpload(proxyBase, file){
-    const res = await fetch(`${proxyBase}/upload-start`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fileName: file.name, mimeType: file.type || "application/pdf", sizeBytes: file.size })
-    });
-    if(!res.ok){ const t = await res.text(); throw new Error(parseProxyError(t, res.status)); }
-    const data = await res.json();
-    if(!data.uploadUrl) throw new Error("خادم API ما رجع رابط رفع صالح");
-    return data.uploadUrl;
-  }
-
-  function uploadBytesWithProgress(uploadUrl, file, onProgress){
+  function uploadBytesWithProgress(proxyBase, file, onProgress){
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open("POST", uploadUrl, true);
-      xhr.setRequestHeader("Content-Length", String(file.size));
-      xhr.setRequestHeader("X-Goog-Upload-Offset", "0");
-      xhr.setRequestHeader("X-Goog-Upload-Command", "upload, finalize");
-      xhr.upload.onprogress = (e) => { if(e.lengthComputable && onProgress) onProgress(Math.round((e.loaded/e.total)*100)); };
+      xhr.open("POST", `${proxyBase}/upload`, true);
+      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+      xhr.setRequestHeader("X-File-Name", encodeURIComponent(file.name));
+      xhr.setRequestHeader("X-File-Size", String(file.size));
+      xhr.upload.onprogress = (e) => {
+        if(e.lengthComputable && onProgress) onProgress(Math.round((e.loaded/e.total)*100));
+      };
       xhr.onload = () => {
         if(xhr.status >= 200 && xhr.status < 300){
-          try{ resolve(JSON.parse(xhr.responseText).file); }catch(e){ reject(new Error("رد غير متوقع من الرفع")); }
-        }else reject(new Error("فشل رفع الملف (" + xhr.status + "): " + xhr.responseText.slice(0,200)));
+          try{
+            const data = JSON.parse(xhr.responseText);
+            if(data.file) resolve(data.file);
+            else reject(new Error("رد غير متوقع من رفع الملف"));
+          }catch(e){ reject(new Error("رد غير متوقع من الرفع")); }
+        }else{
+          reject(new Error("فشل رفع الملف (" + xhr.status + "): " + xhr.responseText.slice(0,200)));
+        }
       };
       xhr.onerror = () => reject(new Error("انقطع الاتصال أثناء الرفع"));
       xhr.send(file);
@@ -37,8 +32,7 @@ window.Gemini = (function(){
   }
 
   async function uploadSource(proxyBase, file, onProgress){
-    const uploadUrl = await startUpload(proxyBase, file);
-    return uploadBytesWithProgress(uploadUrl, file, onProgress);
+    return uploadBytesWithProgress(proxyBase, file, onProgress);
   }
 
   async function pollUntilActive(proxyBase, fileApiName, onState){
