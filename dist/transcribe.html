@@ -1,0 +1,476 @@
+<!DOCTYPE html><html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover"><title>تفريغ الصوت — ادرس معي</title><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="/Adris/assets/favicon-DXSLr8hb.svg"><script>
+(function(){
+  try{
+    var cfg = JSON.parse(localStorage.getItem('adrisma3i_cfg_v1') || '{}');
+    var theme = cfg.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  }catch(e){}
+})();
+</script>
+<script>document.documentElement.classList.add('auth-pending');</script><style>
+.transcribe-page{
+  min-height:100%;
+}
+
+.transcribe-inner{
+  width:min(900px, 100%);
+  margin:0 auto;
+  padding:24px 16px 80px;
+}
+
+.transcribe-head{
+  text-align:center;
+  margin:8px auto 28px;
+}
+
+.transcribe-head-icon{
+  width:64px;
+  height:64px;
+  margin:0 auto 14px;
+  border-radius:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--surface-2);
+  color:var(--accent);
+  border:1px solid var(--border);
+}
+
+.transcribe-head-icon .icon{
+  width:32px;
+  height:32px;
+}
+
+.transcribe-head h1{
+  margin:0 0 8px;
+  font-size:24px;
+  font-weight:800;
+}
+
+.transcribe-head p{
+  margin:0 auto;
+  max-width:620px;
+  color:var(--muted);
+  line-height:1.8;
+  font-size:14px;
+}
+
+.transcribe-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:22px;
+  padding:18px;
+  box-shadow:var(--shadow);
+}
+
+.audio-drop{
+  border:1.5px dashed var(--border);
+  border-radius:18px;
+  padding:34px 18px;
+  text-align:center;
+  cursor:pointer;
+  transition:.2s ease;
+  background:var(--surface-2);
+}
+
+.audio-drop:hover{
+  border-color:var(--accent);
+}
+
+.audio-drop.dragging{
+  border-color:var(--accent);
+  transform:scale(.995);
+}
+
+.audio-drop .drop-icon{
+  width:58px;
+  height:58px;
+  margin:0 auto 14px;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--surface);
+  color:var(--accent);
+  border:1px solid var(--border);
+}
+
+.audio-drop .drop-icon .icon{
+  width:28px;
+  height:28px;
+}
+
+.audio-drop h3{
+  margin:0 0 7px;
+  font-size:16px;
+}
+
+.audio-drop p{
+  margin:0;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.7;
+}
+
+.audio-input{
+  display:none;
+}
+
+.file-info{
+  display:none;
+  margin-top:14px;
+  padding:13px;
+  border:1px solid var(--border);
+  border-radius:15px;
+  background:var(--surface-2);
+  align-items:center;
+  gap:12px;
+}
+
+.file-info.show{
+  display:flex;
+}
+
+.file-info-icon{
+  width:42px;
+  height:42px;
+  flex:0 0 42px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--surface);
+  color:var(--accent);
+}
+
+.file-info-icon .icon{
+  width:22px;
+  height:22px;
+}
+
+.file-info-text{
+  min-width:0;
+  flex:1;
+}
+
+.file-info-name{
+  font-size:13px;
+  font-weight:700;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.file-info-size{
+  color:var(--muted);
+  font-size:11px;
+  margin-top:3px;
+}
+
+.transcribe-btn{
+  width:100%;
+  margin-top:14px;
+}
+
+.process-box{
+  display:none;
+  margin-top:18px;
+  padding:18px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:var(--surface-2);
+}
+
+.process-box.show{
+  display:block;
+}
+
+.process-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:800;
+  font-size:14px;
+  margin-bottom:16px;
+}
+
+.process-spinner{
+  width:20px;
+  height:20px;
+  border:2px solid var(--border);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:transcribe-spin .8s linear infinite;
+}
+
+@keyframes transcribe-spin{
+  to{transform:rotate(360deg);}
+}
+
+.process-steps{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+
+.process-step{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:var(--muted);
+  font-size:12.5px;
+}
+
+.process-step-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  border:1px solid var(--border);
+  flex:0 0 10px;
+}
+
+.process-step.active{
+  color:var(--text);
+  font-weight:700;
+}
+
+.process-step.active .process-step-dot{
+  background:var(--accent);
+  border-color:var(--accent);
+}
+
+.process-step.done{
+  color:var(--text);
+}
+
+.process-step.done .process-step-dot{
+  background:var(--accent);
+  border-color:var(--accent);
+}
+
+.transcript-box{
+  display:none;
+  margin-top:18px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  overflow:hidden;
+  background:var(--surface);
+}
+
+.transcript-box.show{
+  display:block;
+}
+
+.transcript-head{
+  padding:14px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.transcript-title{
+  font-size:14px;
+  font-weight:800;
+}
+
+.copy-transcript{
+  white-space:nowrap;
+}
+
+.transcript-content{
+  padding:18px;
+  min-height:220px;
+  max-height:60vh;
+  overflow:auto;
+  white-space:pre-wrap;
+  word-break:break-word;
+  line-height:2;
+  font-size:14px;
+  color:var(--text);
+}
+
+.transcribe-error{
+  display:none;
+  margin-top:14px;
+  padding:13px 14px;
+  border-radius:14px;
+  border:1px solid rgba(220,80,80,.35);
+  background:rgba(220,80,80,.08);
+  color:var(--text);
+  font-size:12.5px;
+  line-height:1.7;
+}
+
+.transcribe-error.show{
+  display:block;
+}
+
+@media(max-width:600px){
+  .transcribe-inner{
+    padding:18px 12px 70px;
+  }
+
+  .transcribe-head h1{
+    font-size:21px;
+  }
+
+  .transcribe-card{
+    padding:13px;
+    border-radius:19px;
+  }
+
+  .audio-drop{
+    padding:28px 14px;
+  }
+
+  .transcript-head{
+    align-items:flex-start;
+  }
+}
+</style>  <link rel="stylesheet" crossorigin href="/Adris/assets/theme-Bf1j0we8.css">
+</head><body><header id="topbar"></header><nav id="tabnav"></nav><div id="page-root">
+  <div class="page-scroll transcribe-page"><div class="transcribe-inner">
+
+  <div class="transcribe-head">
+    <div class="transcribe-head-icon">
+      <span id="head-mic"></span>
+    </div>
+
+    <h1>تفريغ الصوت</h1>
+
+    <p>
+      ارفع تسجيلًا صوتيًا، وسيستمع إليه الذكاء الاصطناعي بالكامل
+      ثم يحوّل كل ما قيل فيه إلى نص مكتوب يمكنك نسخه بضغطة واحدة.
+    </p>
+  </div>
+
+  <div class="transcribe-card">
+
+    <label class="audio-drop" id="audio-drop" for="audio-file">
+
+      <div class="drop-icon">
+        <span id="drop-mic"></span>
+      </div>
+
+      <h3>ارفع ملفًا صوتيًا</h3>
+
+      <p>
+        اضغط هنا لاختيار التسجيل من جهازك
+        <br>
+        MP3 · WAV · M4A · AAC · OGG · FLAC
+      </p>
+
+    </label>
+
+    <input
+      id="audio-file"
+      class="audio-input"
+      type="file"
+      accept="audio/*"
+    >
+
+    <div class="file-info" id="file-info">
+
+      <div class="file-info-icon">
+        <span id="file-mic"></span>
+      </div>
+
+      <div class="file-info-text">
+        <div class="file-info-name" id="file-name"></div>
+        <div class="file-info-size" id="file-size"></div>
+      </div>
+
+      <button class="icon-btn" id="remove-file" type="button" title="إزالة الملف">
+        <span id="remove-icon"></span>
+      </button>
+
+    </div>
+
+    <button
+      class="btn btn-accent transcribe-btn"
+      id="transcribe-btn"
+      type="button"
+      disabled
+    >
+      <span id="transcribe-btn-icon"></span>
+      تفريغ الصوت إلى نص
+    </button>
+
+    <div class="transcribe-error" id="transcribe-error"></div>
+
+    <div class="process-box" id="process-box">
+
+      <div class="process-title">
+        <div class="process-spinner" id="process-spinner"></div>
+        <span id="process-title-text">جارِ التحضير...</span>
+      </div>
+
+      <div class="process-steps">
+
+        <div class="process-step" id="step-upload">
+          <span class="process-step-dot"></span>
+          <span>رفع التسجيل بأمان إلى الخادم</span>
+        </div>
+
+        <div class="process-step" id="step-analyze">
+          <span class="process-step-dot"></span>
+          <span>جاري الاستماع وتحليل التسجيل</span>
+        </div>
+
+        <div class="process-step" id="step-transcribe">
+          <span class="process-step-dot"></span>
+          <span>جاري تحويل الكلام إلى نص</span>
+        </div>
+
+        <div class="process-step" id="step-finish">
+          <span class="process-step-dot"></span>
+          <span>جاري تجهيز النص النهائي</span>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="transcript-box" id="transcript-box">
+
+      <div class="transcript-head">
+
+        <div class="transcript-title">
+          النص المفرّغ
+        </div>
+
+        <button
+          class="btn btn-accent btn-sm copy-transcript"
+          id="copy-transcript"
+          type="button"
+        >
+          <span id="copy-icon"></span>
+          نسخ النص
+        </button>
+
+      </div>
+
+      <div
+        class="transcript-content"
+        id="transcript-content"
+        dir="rtl"
+      ></div>
+
+    </div>
+
+  </div>
+
+</div>
+
+  </div>
+</div><div id="toast-wrap"></div>
+<div id="modals-mount"></div><script src="js/config.js"></script><script src="js/auth-guard.js"></script><script src="js/icons.js"></script><script src="js/storage.js"></script><script src="js/gemini.js"></script><script src="js/ui.js"></script><script src="js/shared.js"></script><script src="js/transcribe.js"></script></body>
+</html>

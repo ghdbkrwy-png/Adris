@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+<title>ادرس معي — تفعيل الكود</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="/Adris/assets/favicon-DXSLr8hb.svg">
+<style>
+  body{display:flex;align-items:center;justify-content:center;min-height:100vh;overflow:auto;}
+  .activate-card{background:var(--panel);border:1px solid var(--border);border-radius:20px;width:100%;max-width:400px;padding:28px 24px;box-shadow:var(--shadow);text-align:center;}
+  .activate-logo{width:52px;height:52px;border-radius:14px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px;box-shadow:var(--shadow);}
+  .activate-card h1{margin:0 0 6px;font-size:22px;font-weight:800;color:var(--ink);}
+  .activate-card .sub{margin:0 0 22px;font-size:13px;color:var(--ink-soft);line-height:1.7;}
+  .activate-input{width:100%;padding:14px 16px;border-radius:12px;border:1.5px solid var(--border);background:var(--panel-2);color:var(--ink);font-family:inherit;font-size:16px;text-align:center;outline:none;letter-spacing:1px;transition:.15s;}
+  .activate-input:focus{border-color:var(--accent);}
+  .activate-btn{width:100%;margin-top:14px;padding:14px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:.15s;}
+  .activate-btn:hover{filter:brightness(1.08);}
+  .activate-btn:disabled{opacity:.55;cursor:not-allowed;}
+  #activate-message{min-height:22px;margin-top:14px;font-size:12.5px;font-weight:600;line-height:1.6;color:var(--ink-soft);}
+  #activate-message.err{color:var(--danger);}
+  #activate-message.ok{color:var(--accent);}
+  .activate-info{margin-top:18px;padding:12px 14px;border-radius:12px;background:var(--panel-2);font-size:11.5px;color:var(--ink-faint);line-height:1.7;}
+  .activate-spinner{width:20px;height:20px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:act-spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-left:8px;}
+  @keyframes act-spin{to{transform:rotate(360deg);}}
+  .countdown-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;}
+  .countdown-cell{background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:10px 4px;}
+  .countdown-num{font-size:20px;font-weight:800;color:var(--accent-ink);}
+  .countdown-label{font-size:10px;color:var(--ink-faint);margin-top:2px;}
+</style>
+  <meta property="og:image" content="https://bolt.new/static/og_default.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://bolt.new/static/og_default.png">
+  <link rel="stylesheet" crossorigin href="/Adris/assets/theme-Bf1j0we8.css">
+</head>
+<body>
+
+<div class="activate-card">
+  <div class="activate-logo" id="activate-logo"></div>
+  <h1>ادرس معي</h1>
+  <p class="sub">أدخل كود التفعيل للوصول إلى دفاترك الذكية</p>
+
+  <form id="loginForm">
+    <input id="codeInput" class="activate-input" type="text" autocomplete="off" spellcheck="false" maxlength="20" placeholder="XXXX-XXXX-XXXX" required>
+    <button id="submitBtn" class="activate-btn" type="submit">تفعيل الكود</button>
+  </form>
+
+  <div id="activate-message"></div>
+  <div id="countdown-wrap" class="hidden"></div>
+
+  <div class="activate-info">
+    صلاحية الكود تبدأ من لحظة تفعيله وتستمر لمدة 30 يومًا كاملة.
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/icons.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var logoEl = document.getElementById("activate-logo");
+  if(logoEl && window.icon) logoEl.innerHTML = icon("brand");
+
+  var VERIFY_URL = SUPABASE_FUNCTION("check-activation");
+  var DESTINATION = "home.html";
+  var LS_KEY = "adrisma3i_activation_v1";
+  var DEVICE_KEY = "adrisma3i_installation_v1";
+
+  function deviceId(){
+    var v = localStorage.getItem(DEVICE_KEY);
+    if(!v){ v = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36)); localStorage.setItem(DEVICE_KEY, v); }
+    return v;
+  }
+
+  function savedActivation(){
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch(e){ return null; }
+  }
+
+  function normalizeCode(v){ return v.trim().toUpperCase(); }
+
+  function formatRemaining(ms){
+    ms = Math.max(0, ms);
+    var s = Math.floor(ms / 1000);
+    var d = Math.floor(s / 86400);
+    var h = Math.floor((s % 86400) / 3600);
+    var m = Math.floor((s % 3600) / 60);
+    var sec = s % 60;
+    return { d:d, h:h, m:m, s:sec };
+  }
+
+  function showCountdown(expiresAt){
+    var wrap = document.getElementById("countdown-wrap");
+    wrap.classList.remove("hidden");
+    var expiry = new Date(expiresAt).getTime();
+    function tick(){
+      var rem = expiry - Date.now();
+      if(rem <= 0){ wrap.innerHTML = '<div style="color:var(--danger);font-weight:700;">انتهت صلاحية الكود</div>'; clearInterval(timer); return; }
+      var t = formatRemaining(rem);
+      wrap.innerHTML =
+        '<div style="font-size:11.5px;color:var(--ink-soft);margin-bottom:8px;">متبقي على اشتراكك:</div>' +
+        '<div class="countdown-grid">' +
+          '<div class="countdown-cell"><div class="countdown-num">' + t.d + '</div><div class="countdown-label">يوم</div></div>' +
+          '<div class="countdown-cell"><div class="countdown-num">' + t.h + '</div><div class="countdown-label">ساعة</div></div>' +
+          '<div class="countdown-cell"><div class="countdown-num">' + t.m + '</div><div class="countdown-label">دقيقة</div></div>' +
+          '<div class="countdown-cell"><div class="countdown-num">' + t.s + '</div><div class="countdown-label">ثانية</div></div>' +
+        '</div>';
+    }
+    tick();
+    var timer = setInterval(tick, 1000);
+  }
+
+  function showMessage(text, type){
+    var el = document.getElementById("activate-message");
+    el.textContent = text;
+    el.className = type || "";
+  }
+
+  async function checkExisting(){
+    var saved = savedActivation();
+    if(!saved || !saved.code) return;
+    try{
+      var res = await fetch(VERIFY_URL, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ code:saved.code, device_id:deviceId(), mode:"check" }) });
+      var data = await res.json().catch(function(){ return null; });
+      if(res.ok && data && data.valid){
+        localStorage.setItem(LS_KEY, JSON.stringify({ code:saved.code, expiresAt:data.expires_at, activatedAt:data.activated_at }));
+        window.location.replace(DESTINATION);
+      }
+    }catch(e){}
+  }
+
+  checkExisting();
+
+  document.getElementById("loginForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+    var input = document.getElementById("codeInput");
+    var button = document.getElementById("submitBtn");
+    var code = normalizeCode(input.value);
+
+    if(!code){ showMessage("يرجى إدخال كود التفعيل.", "err"); return; }
+
+    button.disabled = true;
+    button.innerHTML = '<span class="activate-spinner"></span> جارٍ التحقق...';
+    showMessage("");
+
+    try{
+      var res = await fetch(VERIFY_URL, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ code:code, device_id:deviceId() }) });
+      var data = await res.json().catch(function(){ return null; });
+
+      if(!res.ok || !data){
+        showMessage("تعذر الاتصال بالخادم.", "err");
+        button.disabled = false; button.textContent = "تفعيل الكود";
+        return;
+      }
+
+      if(!data.valid){
+        showMessage(data.message || "تعذر تفعيل الكود.", "err");
+        button.disabled = false; button.textContent = "تفعيل الكود";
+        return;
+      }
+
+      localStorage.setItem(LS_KEY, JSON.stringify({ code:code, expiresAt:data.expires_at, activatedAt:data.activated_at }));
+      showMessage("تم تفعيل الكود بنجاح!", "ok");
+      button.textContent = "تم التفعيل";
+
+      if(data.expires_at) showCountdown(data.expires_at);
+
+      setTimeout(function(){ window.location.replace(DESTINATION); }, 2500);
+
+    }catch(err){
+      showMessage("تعذر الاتصال بالخادم.", "err");
+      button.disabled = false; button.textContent = "تفعيل الكود";
+    }
+  });
+})();
+</script>
+</body>
+</html>
